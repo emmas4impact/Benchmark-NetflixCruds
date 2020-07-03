@@ -9,6 +9,7 @@ const reviewRouter = require('./services/reviews')
 const server = express()
 const port = process.env.PORT
 
+server.use(express.json())
 server.use(cors())
 server.use("/movies", movieRouter)
 server.use("/reviews", reviewRouter)
