@@ -1,5 +1,7 @@
 const express = require("express")
 const reviewRouter = express.Router();
+const { check, validationResult, sanitizeBody } = require("express-validator")
+const multer = require("multer")
 const { join } = require("path");
 const path = require("path");
 const uniqid= require("uniqid");
@@ -37,11 +39,25 @@ reviewRouter.get('/:id', async(req, res, next)=>{
     
 })
 
-reviewRouter.post('/:imdbId', async(req, res, next)=>{
+reviewRouter.post('/',
+[ check("comment").exists().withMessage("You should write a comment"),
+check("elementId").exists(),
+check("rate").exists().isNumeric(),],
+ async(req, res, next)=>{
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      const error = new Error()
+      error.httpStatusCode = 400
+      error.message = errors
+      next(error)
+    }
     try {
         const reviews = await readDB(reviewPathFolder)
-        const newReview = {...req.body, id: uniqid(), elementId: req.params.imdbId, createdAt: new Date() };
-        
+        const newReview = {
+            ...req.body, 
+            id: uniqid(), 
+            createdAt: new Date() };
+        console.log(req.body)
         reviews.push(newReview)
         await writeDB(reviewPathFolder, reviews)
         
@@ -60,7 +76,7 @@ reviewRouter.put('/:id', async(req, res, next)=>{
         if(review){
             const position = reviewDb.indexOf(review)
             const updatedreview ={...req.body, ...review}
-            reviewDb[position]= updatedMovie
+            reviewDb[position]= updatedreview 
             await writeDB(reviewPathFolder, reviewDb)
             res.status(200).send("Review Updated")
         }else{
