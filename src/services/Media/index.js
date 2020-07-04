@@ -101,7 +101,7 @@ movieRouter.post('/:Id', async(req, res, next)=>{
     
 })
 
-movieRouter.post('/:Id/catalogues/:title', async(req, res, next)=>{
+movieRouter.post('/catalogues/:title', async(req, res, next)=>{
     try {
         function base64_encode(file) {
           var bitmap = fs.readFileSync(file);
@@ -109,12 +109,12 @@ movieRouter.post('/:Id/catalogues/:title', async(req, res, next)=>{
         }
         
         const MoiveDb = await readDB(moviePathFolder)
-        const { Id } = req.params
+        const { title } = req.params
         let newMovie = {}
-        if (Id) {
+        if (title ) {
             const response = await axios.get(
-              "http://www.omdbapi.com/?apikey=f2f0ec42&i="+ Id);
-            console.log(response)
+              "http://www.omdbapi.com/?apikey=f2f0ec42&t="+ title );
+            console.log(response.data)
             newMovie = {
                 Title: response.data.Title, 
                 Year: response.data.Year, 
@@ -126,7 +126,7 @@ movieRouter.post('/:Id/catalogues/:title', async(req, res, next)=>{
                 MoiveDb.push(newMovie)
                 await writeDB(moviePathFolder, MoiveDb)
                 res.status(200).send("New Movie added!")
-                
+                console.log(newMovie)
                 
                 var fonts ={
                     Roboto:{
@@ -145,13 +145,14 @@ movieRouter.post('/:Id/catalogues/:title', async(req, res, next)=>{
                     ]
                   }
                   var pdfDoc =printer.createPdfKitDocument(docDefinition)
-                  pdfDoc.pipe(fs.createWriteStream(`src/services/Pdfs/${newMovie.imdbId}.pdf`))
+                  pdfDoc.pipe(fs.createWriteStream(path.join(__dirname, `../pdfs/${newMovie.Title}.pdf`)))
                   pdfDoc.end();
                   
                   
                   
                   //attachment
-                  pathToAttachment =`${__dirname}/../pdfs/${newMovie.imdbId}.pdf`
+                  pathToAttachment =path.join(__dirname, `../pdfs/${newMovie.Title}.pdf`)
+                  console.log(pathToAttachment)
                   fs.readFile(pathToAttachment, async function(err, data){
                     if(data){
                       sgMail.setApiKey(process.env.SENDGRID_API_KEY)
@@ -165,7 +166,7 @@ movieRouter.post('/:Id/catalogues/:title', async(req, res, next)=>{
                         
                         attachments:[{
                           content: data_64,
-                          filename: newMovie.imdbId,
+                          filename: newMovie.Title,
                           type: "application/pdf"
                           
                           
