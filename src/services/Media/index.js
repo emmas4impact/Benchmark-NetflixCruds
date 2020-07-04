@@ -128,70 +128,70 @@ movieRouter.post('/catalogues/:title', async(req, res, next)=>{
                 res.status(200).send("New Movie added!")
                 console.log(newMovie)
                 
-                var fonts ={
-                    Roboto:{
-                      normal:"fonts/Roboto-Regular.ttf",
-                    }
-                  }
-                  var printer = new PdfPrinter(fonts);
-                  const docDefinition ={
-                    content:[
-                      (Title= "Title: " + newMovie.Title),
-                      (Year= "Year: " + newMovie.Year),
-                      (Poster= "Poster: " + newMovie.Poster),
-                      (imdbId= "imdb: " + newMovie.imdbId),
-                      (Type= "type: " + newMovie.Type)
-                      
-                    ]
-                  }
-                  var pdfDoc =printer.createPdfKitDocument(docDefinition)
-                  pdfDoc.pipe(fs.createWriteStream(path.join(__dirname, `../pdfs/${newMovie.Title}.pdf`)))
-                  pdfDoc.end();
-                  
-                  
-                  
-                  //attachment
-                  pathToAttachment =path.join(__dirname, `../pdfs/${newMovie.Title}.pdf`)
-                  console.log(pathToAttachment)
-                  fs.readFile(pathToAttachment, async function(err, data){
-                    if(data){
-                      sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-                      const data_64 = base64_encode(pathToAttachment)
-                      
-                      const msg ={
-                        to: "emmans4destiny@gmail.com",
-                        from: "strive@school.org",
-                        subject: "Welcome!!",
-                        text: "Please seat down and enjoy your movie!",
-                        
-                        attachments:[{
-                          content: data_64,
-                          filename: newMovie.Title,
-                          type: "application/pdf"
-                          
-                          
-                        },
-                          
-                        ],
-                      };
-                      sgMail.send(msg)
-                      .then((response)=>{
-                        res.send("suceess")
-                        
-                      }).catch((err)=>{
-                        res.send(err)
-                      })
-                    }
-                    //sgMail.send(msg)
-                    
-                  })
+                
             
            
           } else {
             next(new Error("Please give a movie imbdID"))
           }
         
-        
+          var fonts ={
+            Roboto:{
+              normal:"fonts/Roboto-Regular.ttf",
+            }
+          }
+          var printer = new PdfPrinter(fonts);
+          const docDefinition ={
+            content:[
+              (Title= "Title: " + newMovie.Title),
+              (Year= "Year: " + newMovie.Year),
+              (Poster= "Poster: " + newMovie.Poster),
+              (imdbId= "imdb: " + newMovie.imdbId),
+              (Type= "Type: " + newMovie.Type)
+              
+            ]
+          }
+          var pdfDoc =printer.createPdfKitDocument(docDefinition)
+          pdfDoc.pipe(fs.createWriteStream(path.join(__dirname, `../pdfs/${newMovie.Title}.pdf`)))
+          pdfDoc.end();
+          
+          
+          
+          //attachment
+          pathToAttachment =path.join(__dirname, `../pdfs/${newMovie.Title}.pdf`)
+          console.log(pathToAttachment)
+          fs.readFile(pathToAttachment, async function(err, data){
+            if(data){
+              sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+              const data_64 = base64_encode(pathToAttachment)
+              
+              const msg ={
+                to: "emmans4destiny@gmail.com",
+                from: "strive@school.org",
+                subject: "Welcome!!",
+                text: "Please seat down and enjoy your movie!",
+                
+                attachments:[{
+                  content: data_64,
+                  filename: newMovie.Title,
+                  type: "application/pdf"
+                  
+                  
+                },
+                  
+                ],
+              };
+              sgMail.send(msg)
+              .then((response)=>{
+                res.send("suceess")
+                
+              }).catch((err)=>{
+                res.send(err)
+              })
+            }
+            //sgMail.send(msg)
+            
+          })
          
           
         
@@ -208,7 +208,7 @@ movieRouter.put('/:id', async(req, res, next)=>{
         
         if(movie){
             const position = MoiveDb.indexOf(movie)
-            const updatedMovie ={...req.body, ...movie}
+            const updatedMovie ={ ...movie, ...req.body}
             MoiveDb[position]= updatedMovie
             await writeDB(moviePathFolder, MoiveDb)
             res.status(200).send("Updated")
