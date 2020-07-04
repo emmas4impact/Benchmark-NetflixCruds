@@ -75,7 +75,7 @@ reviewRouter.put('/:id', async(req, res, next)=>{
         
         if(review){
             const position = reviewDb.indexOf(review)
-            const updatedreview ={...req.body, ...review}
+            const updatedreview ={ ...review, ...req.body}
             reviewDb[position]= updatedreview 
             await writeDB(reviewPathFolder, reviewDb)
             res.status(200).send("Review Updated")
