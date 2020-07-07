@@ -167,7 +167,7 @@ movieRouter.post('/catalogues/:title', async(req, res, next)=>{
               
               const msg ={
                 to: "emmans4destiny@gmail.com",
-                from: "strive@school.org",
+                from: "emmans4destiny@gmail.com",
                 subject: "Welcome!!",
                 text: "Please seat down and enjoy your movie!",
                 
